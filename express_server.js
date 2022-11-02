@@ -19,11 +19,13 @@ const urlDatabase = {
 };
 
 
+
 app.post("/urls", (req, res) => {
   const shortURL = toString();
   urlDatabase[shortURL] = req.body.longURL;
   res.redirect(`/urls/${shortURL}`);
 });
+
 
 
 app.get("/urls/new", (req, res) => {
@@ -34,6 +36,11 @@ app.get("/urls/:id", (req, res) => {
   const ID = req.params.id;
   const templateVars = { id: ID, longURL: urlDatabase[ID]};
   res.render("urls_show", templateVars);
+});
+
+app.post("/urls/:id/delete", (req, res) => {
+  delete urlDatabase[req.params.id];
+  res.redirect("/urls");
 });
 
 app.get("/u/:id", (req, res) => {
