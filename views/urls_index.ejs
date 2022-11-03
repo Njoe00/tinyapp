@@ -55,10 +55,9 @@
             <tr>
               <td><%= id %></td>
               <td><%= urls[id] %></td>
-              <td> <form method="POST" action="/urls/<%= id %>/edit"> <button type="submit" class="btn btn-primary">Edit</button>
-              <td><form method="POST" action="/urls/<%= id %>/delete"> <button type="submit" class="btn btn-primary">Delete</button>
-              </form></td>
-            </tr>
+              <td><a href="urls/<%= id %>"> <button type="submit" class="btn btn-primary">Edit</button> </a></td>
+              <td><form method="POST" action="/urls/<%= id %>/delete"> <button type="submit" class="btn btn-primary">Delete</button> </form></td>
+              </tr>
           <% } %>
         </tbody>
       </table>

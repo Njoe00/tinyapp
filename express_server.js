@@ -23,13 +23,13 @@ const urlDatabase = {
 app.post("/urls", (req, res) => {
   const shortURL = toString();
   urlDatabase[shortURL] = req.body.longURL;
-  res.redirect(`/urls/${shortURL}`);
+  return res.redirect(`/urls/${shortURL}`);
 });
 
 
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  return res.render("urls_new");
 });
 
 app.get("/urls/:id", (req, res) => {
@@ -38,34 +38,34 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-
+app.post("/urls/:id/edit", (req, res) => {
+  const ID = req.params.id;
+  urlDatabase[ID] = req.body.longURL
+  return res.redirect("/urls");
+  });
 
 app.post("/urls/:id/delete", (req, res) => {
   delete urlDatabase[req.params.id];
-  res.redirect("/urls");
+ return res.redirect("/urls");
 });
-
-// app.post("/Urls/:id/edit", (req, res) => {
-//   res.redirect("/urls/:id");
-//   });
 
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id];
-  res.redirect(longURL);
+  return res.redirect(longURL);
 });
 
 app.get("/urls", (req, res) => {
   const templateVars = {urls: urlDatabase };
-  res.render("urls_index", templateVars);
+ return res.render("urls_index", templateVars);
 });
 
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  return res.send("Hello!");
 });
 
 app.get("/urls.json", (req, res) => {
-    res.json(urlDatabase);
+    return res.json(urlDatabase);
 });
 
 app.get("/hello", (req, res) => {
