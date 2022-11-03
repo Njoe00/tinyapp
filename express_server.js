@@ -7,11 +7,18 @@ const toString = () => {
 const { json } = require("express");
 const express = require("express");
 const app = express();
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
+
 const PORT = 8080; // default port 8080
 
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 
+
+const UserNameDatabase = {
+  1: {id: 1, username: "TinyAppUser", password: "123"}
+};
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -26,9 +33,20 @@ app.post("/urls", (req, res) => {
   return res.redirect(`/urls/${shortURL}`);
 });
 
+app.get('/login', (req, res) => {
+  const templateVars = {username: null};
+  return res.render('login', templateVars);
 
+});
+
+app.post("/login", (req, res) => {
+  const username = req.body.username;
+  res.cookie("username", username);
+  res.redirect("/urls");
+});
 
 app.get("/urls/new", (req, res) => {
+  
   return res.render("urls_new");
 });
 
@@ -55,7 +73,9 @@ app.get("/u/:id", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = {urls: urlDatabase };
+  const username = req.cookies.username;
+  console.log(username);
+  const templateVars = {urls: urlDatabase, username };
  return res.render("urls_index", templateVars);
 });
 
@@ -76,3 +96,9 @@ res.send("<hrml><body>Hello <b>World</b></body></html>\n")
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+// <!-- <h3> Logged in as <%= username %> </h3> -->
+//           <!-- <form action="/login" method="POST"> -->
+//             <!-- <label for="userName"></label><br> -->
+//             <!-- <input name="username" placeholder="username" type="text" id="username"/><br> -->
+//             <!-- <button type="submit" class="btn btn-primary">login</button><br> --></br>
