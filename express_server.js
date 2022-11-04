@@ -27,9 +27,8 @@ const users = {
   },
 };
 
-
 app.get("/register", (req, res) => {
-  const templateVars = { username: null }
+  const templateVars = {user: users[req.cookies.user_id] }
   return res.render("urls_register", templateVars);
 });
 
@@ -40,7 +39,7 @@ app.post("/urls", (req, res) => {
 });
 
 app.get('/login', (req, res) => {
-  const templateVars = { username: null };
+  const templateVars = { user: users[req.cookies.user_id] };
   return res.render('login', templateVars);
 
 });
@@ -50,34 +49,34 @@ app.post('/register', (req, res) => {
   const id = toString();
   const password = req.body.password
   console.log(email, id, password)
-  const templateVars = { id: id, email: email, password: password };
-  users[id] = templateVars;
-  res.cookie(email, id);
+  const user = { id: id, email: email, password: password };
+  users[id] = user;
+  res.cookie("user_id", id);
   console.log(users);
   return res.redirect("/urls");
+
 });
 app.post("/login", (req, res) => {
-  const username = req.body.username;
-  res.cookie("username", username);
-  res.redirect("/urls");
+  const email = req.body.email  
+  const templateVars = {email}
+  res.cookie("user_id", templateVars);
+  res.redirect("/urls");    
 });
 
 app.post("/logout", (req, res) => {
-  const username = req.body.username;
-  res.clearCookie("username", username);
+  const email = req.body.email;
+  res.clearCookie("user_id", email);
   return res.redirect("/urls");
 });
 
 app.get("/urls/new", (req, res) => {
-  const username = req.cookies.username;
-  const templateVars = { username }
+  const templateVars = { user: users[req.cookies.user_id]  }
   return res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:id", (req, res) => {
   const ID = req.params.id;
-  const username = req.cookies.username;
-  const templateVars = { id: ID, longURL: urlDatabase[ID], username };
+  const templateVars = { id: ID, longURL: urlDatabase[ID], user: users[req.cookies.user_id]  };
   res.render("urls_show", templateVars);
 });
 
@@ -98,13 +97,11 @@ app.get("/u/:id", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const username = req.cookies.username;
-  console.log(username);
-  const templateVars = { urls: urlDatabase, username };
+  const email = req.cookies.email;
+  console.log(email);
+  const templateVars = { urls: urlDatabase, user: users[req.cookies.user_id] };
   return res.render("urls_index", templateVars);
 });
-
-
 
 app.get("/", (req, res) => {
   return res.send("Hello!");
@@ -118,13 +115,6 @@ app.get("/hello", (req, res) => {
   res.send("<hrml><body>Hello <b>World</b></body></html>\n")
 });
 
-
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
-// <!-- <h3> Logged in as <%= username %> </h3> -->
-//           <!-- <form action="/login" method="POST"> -->
-//             <!-- <label for="userName"></label><br> -->
-//             <!-- <input name="username" placeholder="username" type="text" id="username"/><br> -->
-//             <!-- <button type="submit" class="btn btn-primary">login</button><br> --></br>
