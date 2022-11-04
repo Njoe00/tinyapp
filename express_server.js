@@ -1,10 +1,8 @@
 const toString = () => {
-  return (Math.random()+ 1).toString(36).substring(6);
+  return (Math.random() + 1).toString(36).substring(6);
 };
 
-
-
-const { json } = require("express");
+const { json, text } = require("express");
 const express = require("express");
 const app = express();
 const cookieParser = require('cookie-parser');
@@ -23,7 +21,10 @@ const urlDatabase = {
 
 
 
-
+app.get("/register", (req, res) => {
+  const templateVars = { username: null }
+  return res.render("urls_register", templateVars);
+});
 
 app.post("/urls", (req, res) => {
   const shortURL = toString();
@@ -32,7 +33,7 @@ app.post("/urls", (req, res) => {
 });
 
 app.get('/login', (req, res) => {
-  const templateVars = {username: null};
+  const templateVars = { username: null };
   return res.render('login', templateVars);
 
 });
@@ -51,14 +52,14 @@ app.post("/logout", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   const username = req.cookies.username;
-  const templateVars = {username}
+  const templateVars = { username }
   return res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:id", (req, res) => {
   const ID = req.params.id;
   const username = req.cookies.username;
-  const templateVars = { id: ID, longURL: urlDatabase[ID], username};
+  const templateVars = { id: ID, longURL: urlDatabase[ID], username };
   res.render("urls_show", templateVars);
 });
 
@@ -66,11 +67,11 @@ app.post("/urls/:id/edit", (req, res) => {
   const ID = req.params.id;
   urlDatabase[ID] = req.body.longURL
   return res.redirect("/urls");
-  });
+});
 
 app.post("/urls/:id/delete", (req, res) => {
   delete urlDatabase[req.params.id];
- return res.redirect("/urls");
+  return res.redirect("/urls");
 });
 
 app.get("/u/:id", (req, res) => {
@@ -81,9 +82,10 @@ app.get("/u/:id", (req, res) => {
 app.get("/urls", (req, res) => {
   const username = req.cookies.username;
   console.log(username);
-  const templateVars = {urls: urlDatabase, username };
- return res.render("urls_index", templateVars);
+  const templateVars = { urls: urlDatabase, username };
+  return res.render("urls_index", templateVars);
 });
+
 
 
 app.get("/", (req, res) => {
@@ -91,11 +93,11 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls.json", (req, res) => {
-    return res.json(urlDatabase);
+  return res.json(urlDatabase);
 });
 
 app.get("/hello", (req, res) => {
-res.send("<hrml><body>Hello <b>World</b></body></html>\n")
+  res.send("<hrml><body>Hello <b>World</b></body></html>\n")
 });
 
 
