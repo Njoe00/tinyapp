@@ -16,14 +16,12 @@ app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 
 
-const UserNameDatabase = {
-  1: {id: 1, username: "TinyAppUser", password: "123"}
-};
-
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+
+
 
 
 
@@ -46,13 +44,15 @@ app.post("/login", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  
-  return res.render("urls_new");
+  const username = req.cookies.username;
+  const templateVars = {username}
+  return res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:id", (req, res) => {
   const ID = req.params.id;
-  const templateVars = { id: ID, longURL: urlDatabase[ID]};
+  const username = req.cookies.username;
+  const templateVars = { id: ID, longURL: urlDatabase[ID], username};
   res.render("urls_show", templateVars);
 });
 
