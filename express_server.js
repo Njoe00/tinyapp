@@ -27,8 +27,9 @@ const users = {
   },
 };
 
+
 app.get("/register", (req, res) => {
-  const templateVars = {user: users[req.cookies.user_id] }
+  const templateVars = { user: users[req.cookies.user_id] }
   return res.render("urls_register", templateVars);
 });
 
@@ -45,22 +46,30 @@ app.get('/login', (req, res) => {
 });
 
 app.post('/register', (req, res) => {
-  const email = req.body.email
+  console.log(req.body);
+  const email = req.body.email;
+  const password = req.body.password;
+
+  if (password === '' || email === '') {
+    return res.send("400 status code. Email or password is empty");
+  }
+  for (let key in users) {
+    if (users[key].email === email) {
+      return res.send("400 status code. Email already exists. ")
+    }
+  }
   const id = toString();
-  const password = req.body.password
-  console.log(email, id, password)
   const user = { id: id, email: email, password: password };
   users[id] = user;
   res.cookie("user_id", id);
-  console.log(users);
   return res.redirect("/urls");
-
 });
+
 app.post("/login", (req, res) => {
-  const email = req.body.email  
-  const templateVars = {email}
+  const email = req.body.email
+  const templateVars = { email }
   res.cookie("user_id", templateVars);
-  res.redirect("/urls");    
+  res.redirect("/urls");
 });
 
 app.post("/logout", (req, res) => {
@@ -70,13 +79,13 @@ app.post("/logout", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = { user: users[req.cookies.user_id]  }
+  const templateVars = { user: users[req.cookies.user_id] }
   return res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:id", (req, res) => {
   const ID = req.params.id;
-  const templateVars = { id: ID, longURL: urlDatabase[ID], user: users[req.cookies.user_id]  };
+  const templateVars = { id: ID, longURL: urlDatabase[ID], user: users[req.cookies.user_id] };
   res.render("urls_show", templateVars);
 });
 
@@ -98,7 +107,6 @@ app.get("/u/:id", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const email = req.cookies.email;
-  console.log(email);
   const templateVars = { urls: urlDatabase, user: users[req.cookies.user_id] };
   return res.render("urls_index", templateVars);
 });
@@ -118,3 +126,5 @@ app.get("/hello", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+
