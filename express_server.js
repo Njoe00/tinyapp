@@ -23,7 +23,7 @@ const users = {
   userRandomID: {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur",
+    password: "123",
   },
 };
 
@@ -41,12 +41,11 @@ app.post("/urls", (req, res) => {
 
 app.get('/login', (req, res) => {
   const templateVars = { user: users[req.cookies.user_id] };
-  return res.render('login', templateVars);
+  return res.render('urls_login', templateVars);
 
 });
 
 app.post('/register', (req, res) => {
-  console.log(req.body);
   const email = req.body.email;
   const password = req.body.password;
 
@@ -66,11 +65,29 @@ app.post('/register', (req, res) => {
 }); 
 
 app.post("/login", (req, res) => {
-  const email = req.body.email
-  const templateVars = { email }
-  res.cookie("user_id", templateVars);
-  res.redirect("/urls");
+  const id = toString();
+  // const email = req.body.email
+  // const password = req.body.params;
+  // const user = { id: id, email: email, password: password };
+  // users[id] = user;
+  
+  for (let key in users ) {
+    if (users[key].email === req.body.email) {
+      if (users[key].password === req.body.password) {
+        
+        res.cookie("user_id", id);
+        return res.redirect("/urls");
+      } else {
+        return res.send("error 403: username or password incorrect");
+      }
+    }
+  }
+  return res.send("error 403: username or password incorrect");
 });
+    
+    
+
+  
 
 app.get("/login", (req, res) => {
   return res.render("urls_login")
