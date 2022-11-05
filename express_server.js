@@ -62,19 +62,15 @@ app.post('/register', (req, res) => {
   users[id] = user;
   res.cookie("user_id", id);
   return res.redirect("/urls");
-}); 
+});
 
 app.post("/login", (req, res) => {
   const id = toString();
-  // const email = req.body.email
-  // const password = req.body.params;
-  // const user = { id: id, email: email, password: password };
-  // users[id] = user;
-  
-  for (let key in users ) {
+
+  for (let key in users) {
     if (users[key].email === req.body.email) {
       if (users[key].password === req.body.password) {
-        
+
         res.cookie("user_id", id);
         return res.redirect("/urls");
       } else {
@@ -84,19 +80,19 @@ app.post("/login", (req, res) => {
   }
   return res.send("error 403: username or password incorrect");
 });
-    
-    
 
-  
+
+
+
 
 app.get("/login", (req, res) => {
   return res.render("urls_login")
 });
 
 app.post("/logout", (req, res) => {
-  const email = req.body.email;
-  res.clearCookie("user_id", email);
-  return res.redirect("/urls");
+  const templateVars = { user: users[req.cookies.user_id] }
+  res.clearCookie("user_id", templateVars);
+  return res.redirect("/login");
 });
 
 app.get("/urls/new", (req, res) => {
