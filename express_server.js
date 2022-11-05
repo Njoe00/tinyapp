@@ -40,7 +40,7 @@ app.post("/urls", (req, res) => {
 });
 
 app.get('/login', (req, res) => {
-  const templateVars = { user: users[req.cookies.user_id] };
+  const templateVars = { user: users[req.cookies.user_id]};
   return res.render('urls_login', templateVars);
 
 });
@@ -66,11 +66,13 @@ app.post('/register', (req, res) => {
 
 app.post("/login", (req, res) => {
   const id = toString();
-
+  const email = req.body.email;
+  const password = req.body.password;
   for (let key in users) {
-    if (users[key].email === req.body.email) {
-      if (users[key].password === req.body.password) {
-
+    if (users[key].email === email) {
+      if (users[key].password === password) {
+        const user = { id: id, email: email, password: password };
+        users[id] = user;
         res.cookie("user_id", id);
         return res.redirect("/urls");
       } else {
@@ -86,6 +88,10 @@ app.post("/login", (req, res) => {
 
 
 app.get("/login", (req, res) => {
+  console.log(users.userRandomID)
+  if (users.userRandomID === users[req.cookies.user_id]) {
+    res.redirect("/urls");
+  }
   return res.render("urls_login")
 });
 
