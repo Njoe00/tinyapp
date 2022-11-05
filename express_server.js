@@ -63,13 +63,17 @@ app.post('/register', (req, res) => {
   users[id] = user;
   res.cookie("user_id", id);
   return res.redirect("/urls");
-});
+}); 
 
 app.post("/login", (req, res) => {
   const email = req.body.email
   const templateVars = { email }
   res.cookie("user_id", templateVars);
   res.redirect("/urls");
+});
+
+app.get("/login", (req, res) => {
+  return res.render("urls_login")
 });
 
 app.post("/logout", (req, res) => {

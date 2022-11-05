@@ -25,10 +25,15 @@
         </form>
         </td>
    <% } else { %>
-      <form action="/login" method="POST">
-        <label for="email"></label><br>
-        <input name="email" type="text" placeholder="email" id="email"/><br>
+      <form action="/login" method="get">
+        <label for="login"></label><br>
         <button type="submit" class="btn btn-primary">login</button><br>
+      </form>
+    </div>
+    </div>
+      <form action="/register" method="get">
+        <label for="register"></label><br>
+        <button type="submit" class="btn btn-primary">register</button><br>
       </form>
    <% } %>
     </div>
