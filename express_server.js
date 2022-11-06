@@ -29,14 +29,22 @@ const users = {
 
 
 app.get("/register", (req, res) => {
-  const templateVars = { user: users[req.cookies.user_id] }
+  const templateVars = { user: users[req.cookies.user_id] };
+  if (users[req.cookies.user_id]) {
+    res.redirect("/urls");
+    return;
+  }
   return res.render("urls_register", templateVars);
 });
 
 app.post("/urls", (req, res) => {
   const shortURL = toString();
   urlDatabase[shortURL] = req.body.longURL;
-  return res.redirect(`/urls/${shortURL}`);
+  if (users[req.cookies.user_id]) {
+    res.redirect(`/urls/${shortURL}`);
+    return;
+  }
+  res.send("you cannot make shorten URLs' without an account");
 });
 
 app.get('/login', (req, res) => {
@@ -106,8 +114,13 @@ app.post("/logout", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = { user: users[req.cookies.user_id] }
-  return res.render("urls_new", templateVars);
+  const templateVars = { user: users[req.cookies.user_id] };
+  console.log("test");
+  if (users[req.cookies.user_id]) {
+    res.render("urls_new", templateVars);
+    return;
+  }
+  return res.redirect("/login");
 });
 
 app.get("/urls/:id", (req, res) => {
@@ -128,8 +141,13 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id];
-  return res.redirect(longURL);
+  const ID = req.params.id;
+  const longURL = urlDatabase[ID];
+  if (longURL) {
+      res.redirect(longURL);
+      return;
+    }
+  res.send("shortend URL does not exist");
 });
 
 app.get("/urls", (req, res) => {
