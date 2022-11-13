@@ -2,6 +2,15 @@ const toString = () => {
   return (Math.random() + 1).toString(36).substring(6);
 };
 
+const urlsforUser = (id) => {
+  for (key in urlDatabase) {
+    if (id === urlDatabase[key].userID) {
+      return urlDatabase[key].longURL;
+    }
+  }
+};
+
+
 const { json, text } = require("express");
 const express = require("express");
 const app = express();
@@ -15,8 +24,15 @@ app.use(express.urlencoded({ extended: true }));
 
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b2xVn2: {
+    longURL: "http://www.lighthouselabs.ca",
+    userID: "aJ48lw",
+  },
+  i3BoGr: {
+    longURL: "http://www.google.com",
+    userID: "aJ48lw",
+  },
+
 };
 
 const users = {
@@ -38,13 +54,23 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  const shortURL = toString();
-  urlDatabase[shortURL] = req.body.longURL;
+  const id = toString();
+  urlDatabase[id] = { longURL: req.body.longURL, userID: req.cookies.user_id };
   if (users[req.cookies.user_id]) {
-    res.redirect(`/urls/${shortURL}`);
-    return;
+    return res.redirect(`/urls/${id}`);
+
   }
-  res.send("you cannot make shorten URLs' without an account");
+  return res.send("you cannot make shorten URLs' without an account");
+
+});
+
+app.post("/urls/edit", (req, res) => {
+  const id = toString();
+  let longURL = req.body.longURL;
+  urlDatabase[id] = { longURL, userID: req.cookies.user_id };
+  // console.log("id", urlDatabase[id], "id2", urlDatabase);
+  res.redirect("/urls");
+  return;
 });
 
 app.get('/login', (req, res) => {
@@ -95,27 +121,14 @@ app.post("/login", (req, res) => {
   return res.send("error 403: username or password incorrect");
 });
 
-
-
-
-
-// app.get("/login", (req, res) => {
-//   console.log(users.userRandomID)
-//   if (users.userRandomID === users[req.cookies.user_id]) {
-//     res.redirect("/urls");
-//   }
-//   return res.render("urls_login")
-// });
-
 app.post("/logout", (req, res) => {
-  const templateVars = { user: users[req.cookies.user_id] }
+  const templateVars = { user: users[req.cookies.user_id] };
   res.clearCookie("user_id", templateVars);
   return res.redirect("/login");
 });
 
 app.get("/urls/new", (req, res) => {
   const templateVars = { user: users[req.cookies.user_id] };
-  console.log("test");
   if (users[req.cookies.user_id]) {
     res.render("urls_new", templateVars);
     return;
@@ -124,15 +137,31 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  const ID = req.params.id;
-  const templateVars = { id: ID, longURL: urlDatabase[ID], user: users[req.cookies.user_id] };
-  res.render("urls_show", templateVars);
+  const id = req.params.id;
+  const longURL = urlDatabase[id].longURL;
+  const user = users.userRandomID;
+  const templateVars = { id: id, longURL: urlDatabase[id].longURL, userID: users[req.cookies.user_id].id, user};
+  // if (req.cookies.user_id) {
+  //   return res.render("urls_show", templateVars);
+  // }
+  // res.send("Error you need a registered account to view URLS");
+  // if (urlDatabase[id].userID === req.cookies.user_id) {
+    return res.render("urls_show", templateVars);
+  // } return res.send("Error this URL does not belong to this user");
+});
+
+app.post("/urls/:id", (req, res) => {
+  const id = req.params.id;
+  console.log("line 157", id, "line 158", req.body);
+  urlDatabase[id].longURL = req.body.longURL;
+  return res.redirect("/urls");
 });
 
 app.post("/urls/:id/edit", (req, res) => {
-  const ID = req.params.id;
-  urlDatabase[ID] = req.body.longURL
-  return res.redirect("/urls");
+  const id = toString();
+  urlDatabase[id].longURL = req.body.longURL;
+  res.redirect("/urls");
+  return;
 });
 
 app.post("/urls/:id/delete", (req, res) => {
@@ -141,22 +170,26 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 app.get("/u/:id", (req, res) => {
-  const ID = req.params.id;
-  const longURL = urlDatabase[ID];
+  const id = req.params.id;
+  urlDatabase[id];
+  const longURL = urlDatabase[id].longURL;
   if (longURL) {
-      res.redirect(longURL);
-      return;
-    }
-  res.send("shortend URL does not exist");
+    return res.redirect(longURL);
+  }
+  return res.send("shortend URL does not exist");
 });
 
 app.get("/urls", (req, res) => {
-  const email = req.cookies.email;
   const templateVars = { urls: urlDatabase, user: users[req.cookies.user_id] };
-  return res.render("urls_index", templateVars);
+  if (req.cookies.user_id) {
+    return res.render("urls_index", templateVars);
+  }
+  return res.send("Error you need a registered account to view URLS");
 });
 
 app.get("/", (req, res) => {
+  const email = req.cookies.email;
+
   return res.send("Hello!");
 });
 
