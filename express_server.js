@@ -68,7 +68,6 @@ app.post("/urls/edit", (req, res) => {
   const id = toString();
   let longURL = req.body.longURL;
   urlDatabase[id] = { longURL, userID: req.cookies.user_id };
-  // console.log("id", urlDatabase[id], "id2", urlDatabase);
   res.redirect("/urls");
   return;
 });
@@ -141,18 +140,13 @@ app.get("/urls/:id", (req, res) => {
   const longURL = urlDatabase[id].longURL;
   const user = users.userRandomID;
   const templateVars = { id: id, longURL: urlDatabase[id].longURL, userID: users[req.cookies.user_id].id, user};
-  // if (req.cookies.user_id) {
-  //   return res.render("urls_show", templateVars);
-  // }
-  // res.send("Error you need a registered account to view URLS");
-  // if (urlDatabase[id].userID === req.cookies.user_id) {
+  if (urlDatabase[id].userID === req.cookies.user_id) {
     return res.render("urls_show", templateVars);
-  // } return res.send("Error this URL does not belong to this user");
+  } return res.send("Error this URL does not belong to this user");
 });
 
 app.post("/urls/:id", (req, res) => {
   const id = req.params.id;
-  console.log("line 157", id, "line 158", req.body);
   urlDatabase[id].longURL = req.body.longURL;
   return res.redirect("/urls");
 });
@@ -165,8 +159,12 @@ app.post("/urls/:id/edit", (req, res) => {
 });
 
 app.post("/urls/:id/delete", (req, res) => {
-  delete urlDatabase[req.params.id];
-  return res.redirect("/urls");
+  const id = req.params.id;
+  urlDatabase[id];
+  if (urlDatabase[id].userID === req.cookies.user_id) {
+    delete urlDatabase[req.params.id];
+    res.redirect("/urls");
+  } return res.send("Error this URL does not belong to this user");
 });
 
 app.get("/u/:id", (req, res) => {
