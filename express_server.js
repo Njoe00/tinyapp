@@ -16,6 +16,9 @@ const express = require("express");
 const app = express();
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
+const bcrypt = require("bcryptjs");
+
+
 
 const PORT = 8080; // default port 8080
 
@@ -64,13 +67,7 @@ app.post("/urls", (req, res) => {
 
 });
 
-app.post("/urls/edit", (req, res) => {
-  const id = toString();
-  let longURL = req.body.longURL;
-  urlDatabase[id] = { longURL, userID: req.cookies.user_id };
-  res.redirect("/urls");
-  return;
-});
+
 
 app.get('/login', (req, res) => {
   const templateVars = { user: users[req.cookies.user_id] };
@@ -95,7 +92,9 @@ app.post('/register', (req, res) => {
     }
   }
   const id = toString();
-  const user = { id: id, email: email, password: password };
+  const bcrypt = require("bcryptjs");
+  const hashedPassword = bcrypt.hashSync(password, 3);
+  const user = {id: id, email: email, password: hashedPassword};
   users[id] = user;
   res.cookie("user_id", id);
   return res.redirect("/urls");
@@ -105,9 +104,10 @@ app.post("/login", (req, res) => {
   const id = toString();
   const email = req.body.email;
   const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, 3);
   for (let key in users) {
     if (users[key].email === email) {
-      if (users[key].password === password) {
+      if (bcrypt.compareSync("124", hashedPassword)) {
         const user = { id: id, email: email, password: password };
         users[id] = user;
         res.cookie("user_id", id);
@@ -139,10 +139,14 @@ app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id].longURL;
   const user = users.userRandomID;
-  const templateVars = { id: id, longURL: urlDatabase[id].longURL, userID: users[req.cookies.user_id].id, user};
-  if (urlDatabase[id].userID === req.cookies.user_id) {
+  const templateVars = { id: id, longURL: urlDatabase[id].longURL, userID: users[req.cookies.user_id].id, user };
+  if (longURL !== urlDatabase[id].longURL) {
+    return res.send("Error this URL does not exist");
+  } else if (urlDatabase[id].userID === req.cookies.user_id) {
     return res.render("urls_show", templateVars);
-  } return res.send("Error this URL does not belong to this user");
+  } else {
+    return res.send("Error this URL does not belong to this user");
+  } 
 });
 
 app.post("/urls/:id", (req, res) => {
