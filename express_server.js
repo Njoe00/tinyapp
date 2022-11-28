@@ -10,20 +10,27 @@ const urlsforUser = (id) => {
   }
 };
 
-
-const { json, text } = require("express");
+const {json} = require("express");
 const express = require("express");
+
 const app = express();
+const PORT = 8080; // default port 8080 
+
+
+app.set("view engine", "ejs" );
+app.use(express.urlencoded({extended:true}));
+// const cookieSession = require('cookie-session');
+// app.use(cookieSession({
+//   name:'session1',
+//   secret: "all your bases belong to us",
+
+//   maxAge: 90000
+// }));
+
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 const bcrypt = require("bcryptjs");
 
-
-
-const PORT = 8080; // default port 8080
-
-app.set("view engine", "ejs");
-app.use(express.urlencoded({ extended: true }));
 
 
 const urlDatabase = {
@@ -46,6 +53,15 @@ const users = {
   },
 };
 
+app.get("/urls", (req, res) => {
+  const userID = req.cookies.user_id
+  if (userID) {
+    const userURls = (userID, urlDatabase)
+    const templateVars = {user: users[userID], urls: userURls};
+    return res.render("urls_index", templateVars);
+  }
+  return res.send("Error you need a registered account to view URLS");
+});
 
 app.get("/register", (req, res) => {
   const templateVars = { user: users[req.cookies.user_id] };
@@ -58,8 +74,8 @@ app.get("/register", (req, res) => {
 
 app.post("/urls", (req, res) => {
   const id = toString();
-  urlDatabase[id] = { longURL: req.body.longURL, userID: req.cookies.user_id };
-  if (users[req.cookies.user_id]) {
+  urlDatabase[id] = { longURL: req.body.longURL, userID: req.cookies.user_id};
+  if (req.cookies.user_id) {
     return res.redirect(`/urls/${id}`);
 
   }
@@ -68,13 +84,12 @@ app.post("/urls", (req, res) => {
 });
 
 
-
 app.get('/login', (req, res) => {
-  const templateVars = { user: users[req.cookies.user_id] };
   if (users[req.cookies.user_id]) {
     res.redirect("/urls");
     return;
   }
+  const templateVars = { user: users[req.cookies.user_id] };
   return res.render('urls_login', templateVars);
 
 });
@@ -88,11 +103,10 @@ app.post('/register', (req, res) => {
   }
   for (let key in users) {
     if (users[key].email === email) {
-      return res.send("400 status code. Email already exists. ")
+      return res.send("400 status code. Email already exists. ");
     }
   }
   const id = toString();
-  const bcrypt = require("bcryptjs");
   const hashedPassword = bcrypt.hashSync(password, 3);
   const user = {id: id, email: email, password: hashedPassword};
   users[id] = user;
@@ -102,12 +116,12 @@ app.post('/register', (req, res) => {
 
 app.post("/login", (req, res) => {
   const id = toString();
-  const email = req.body.email;
+  const email = req.body.email
   const password = req.body.password;
   const hashedPassword = bcrypt.hashSync(password, 3);
   for (let key in users) {
     if (users[key].email === email) {
-      if (bcrypt.compareSync("124", hashedPassword)) {
+      if (bcrypt.compareSync("123", hashedPassword)) {
         const user = { id: id, email: email, password: password };
         users[id] = user;
         res.cookie("user_id", id);
@@ -139,14 +153,14 @@ app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id].longURL;
   const user = users.userRandomID;
-  const templateVars = { id: id, longURL: urlDatabase[id].longURL, userID: users[req.cookies.user_id].id, user };
+  const templateVars = { id: id, longURL: urlDatabase[id].longURL, userID: req.cookies.user_id, user };
   if (longURL !== urlDatabase[id].longURL) {
     return res.send("Error this URL does not exist");
   } else if (urlDatabase[id].userID === req.cookies.user_id) {
     return res.render("urls_show", templateVars);
   } else {
     return res.send("Error this URL does not belong to this user");
-  } 
+  }
 });
 
 app.post("/urls/:id", (req, res) => {
@@ -181,14 +195,6 @@ app.get("/u/:id", (req, res) => {
   return res.send("shortend URL does not exist");
 });
 
-app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, user: users[req.cookies.user_id] };
-  if (req.cookies.user_id) {
-    return res.render("urls_index", templateVars);
-  }
-  return res.send("Error you need a registered account to view URLS");
-});
-
 app.get("/", (req, res) => {
   const email = req.cookies.email;
 
@@ -200,7 +206,7 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/hello", (req, res) => {
-  res.send("<hrml><body>Hello <b>World</b></body></html>\n")
+  res.send("<hrml><body>Hello <b>World</b></body></html>\n");
 });
 
 app.listen(PORT, () => {
